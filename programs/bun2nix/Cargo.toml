@@ -3,6 +3,7 @@ name = "bun2nix"
 path = "src/main.rs"
 
 [dependencies]
+bun-rs = {path = "../bun-rs"}
 clap = {version = "4.5.31", features = ["derive", "string"]}
 jsonc-parser = {version = "0.26.2", features = ["serde"]}
 serde = {version = "1.0.218", features = ["derive"]}
@@ -24,7 +25,3 @@ path = "src/lib.rs"
 name = "bun2nix"
 version = "2.1.2"
 edition = "2024"
-
-[profile.release]
-lto = true
-codegen-units = 1

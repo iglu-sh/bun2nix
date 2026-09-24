@@ -1,8 +1,4 @@
-use crate::{
-    Package,
-    error::{Error, Result},
-    package::Fetcher,
-};
+use crate::{Package, error::{Error, Result}, package::Fetcher};
 
 mod prefetch;
 pub use prefetch::Prefetch;
@@ -35,7 +31,7 @@ impl PackageDeserializer {
             2 => deserializer.deserialize_tarball_or_file_package(),
             3 => deserializer.deserialize_tarball_git_or_github_package(),
             4 => deserializer.deserialize_npm_package(),
-            x => Err(Error::UnexpectedPackageEntryLength(x)),
+            x => Err(bun_rs::Error::UnexpectedPackageEntryLength(x).into()),
         }
     }
 
@@ -109,12 +105,13 @@ impl PackageDeserializer {
     ///
     /// This is found in the source as a tuple of arity 3
     pub fn deserialize_github_package(id: String) -> Result<Package> {
-        let (url, rev) = split_once_owned(id, '#').ok_or(Error::MissingGitRef)?;
+        let (url, rev) = split_once_owned(id, '#').ok_or(bun_rs::Error::MissingGitRef)?;
 
         let prefetch_url = format!("{}?ref={}", &url, &rev);
         let prefetch = Prefetch::prefetch_package(&prefetch_url)?;
 
-        let (owner_with_pre, repo) = split_once_owned(url, '/').ok_or(Error::ImproperGithubUrl)?;
+        let (owner_with_pre, repo) =
+            split_once_owned(url, '/').ok_or(bun_rs::Error::ImproperGithubUrl)?;
         let owner = drop_prefix(owner_with_pre, "github:");
 
         let id_with_ver = format!("github:{}-{}-{}", &owner, &repo, &rev);
@@ -136,7 +133,7 @@ impl PackageDeserializer {
     /// This is found in the source as a tuple of arity 3
     pub fn deserialize_git_package(id: String) -> Result<Package> {
         let git_url = drop_prefix(id, "git+");
-        let (url, rev) = split_once_owned(git_url, '#').ok_or(Error::MissingGitRef)?;
+        let (url, rev) = split_once_owned(git_url, '#').ok_or(bun_rs::Error::MissingGitRef)?;
 
         let prefetch_url = format!("git+{}?rev={}", &url, &rev);
         let prefetch = Prefetch::prefetch_package(&prefetch_url)?;
@@ -232,7 +229,7 @@ impl PackageDeserializer {
     pub fn deserialize_workspace_package(mut self) -> Result<Package> {
         let id = swap_remove_value(&mut self.values, 0);
         let path = Self::drain_after_substring(id, "workspace:")
-            .ok_or(Error::MissingWorkspaceSpecifier)?;
+            .ok_or(bun_rs::Error::MissingWorkspaceSpecifier)?;
 
         Ok(Package::new(self.name, Fetcher::CopyToStore { path }))
     }

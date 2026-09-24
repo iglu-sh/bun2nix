@@ -12,7 +12,7 @@ in
 
         Requires that `bunDeps` be set to
         the output of `fetchBunDeps`, then
-        sets up bun's cache to be ready for 
+        sets up bun's cache to be ready for
         building in the nix sandbox.
       '';
       type = types.package;
@@ -20,7 +20,12 @@ in
   };
 
   config.perSystem =
-    { pkgs, config, ... }:
+    {
+      pkgs,
+      config,
+      self',
+      ...
+    }:
     {
       mkDerivation.hook = pkgs.makeSetupHook {
         name = "bun2nix-hook";
@@ -31,6 +36,8 @@ in
         ];
         substitutions = {
           resolveCatalogTs = ./resolve-catalog.ts;
+          modulePopulator = lib.getExe self'.packages.modulePopulator;
+          workspacePromoter = lib.getExe self'.packages.workspacePromoter;
           bunDefaultInstallFlags =
             if pkgs.stdenv.hostPlatform.isDarwin then
               [

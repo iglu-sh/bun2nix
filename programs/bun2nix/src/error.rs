@@ -36,6 +36,8 @@ Make sure all versions in your bun lockfile are formatted properly or try deleti
 Consider updating your local package or contributing to `bun2nix` if this version hasn't been supported yet"
     )]
     UnsupportedLockfileVersion(u8),
+    #[error(transparent)]
+    BunRs(#[from] bun_rs::Error),
     #[error("Error while fetching package from it's source: \n{0}")]
     FetchingFailed(io::Error),
     #[error("\nConsole error while fetching package from it's source: \n\n{0}")]

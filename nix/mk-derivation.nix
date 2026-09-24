@@ -27,6 +27,12 @@ in
       mkDerivation.function = lib.extendMkDerivation {
         constructDrv = pkgs.stdenv.mkDerivation;
 
+        excludeDrvArgNames = [
+          "bunLockFile"
+          "bunWorkspace"
+          "bunWorkspaceDeps"
+        ];
+
         extendDrvArgs =
           _finalAttrs:
           {
@@ -38,6 +44,9 @@ in
             bunCompileToBytecode ? true,
             removeBunBuildFlags ? [ ],
             extraBunBuildFlags ? [ ],
+            bunLockFile ? null,
+            bunWorkspace ? null,
+            bunWorkspaceDeps ? { },
             ...
           }@args:
 
@@ -139,6 +148,17 @@ in
             nativeBuildInputs = nativeBuildInputs ++ [
               config.mkDerivation.hook
             ];
+          }
+          // lib.optionalAttrs (bunLockFile != null) {
+            bunLockFile = "${bunLockFile}";
+          }
+          // lib.optionalAttrs (bunWorkspace != null) {
+            inherit bunWorkspace;
+          }
+          // lib.optionalAttrs (bunWorkspaceDeps != { }) {
+            bunWorkspaceDeps = lib.concatStringsSep "\n" (
+              lib.mapAttrsToList (name: path: "${name}\t${path}") bunWorkspaceDeps
+            );
           };
       };
     };

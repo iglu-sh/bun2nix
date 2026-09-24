@@ -11,11 +11,16 @@
           pname = "bun2nix-js";
           inherit (config.cargoTOML.package) version;
 
-          src = ../../programs/bun2nix;
+          src = ../../programs;
 
           cargoLock = {
             lockFile = finalAttrs.src + "/Cargo.lock";
           };
+
+          cargoBuildFlags = [
+            "-p"
+            "bun2nix"
+          ];
 
           bunDeps = final.bun2nix.fetchBunDeps {
             bunNix = finalAttrs.src + "/bun.nix";
